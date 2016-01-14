@@ -72,7 +72,34 @@
         <powermock.version>1.6.4</powermock.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>artifactory</id>
+            <url>https://basholabs.artifactoryonline.com/basholabs/libs-snapshot</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jfrog-artifactory-bintray</id>
+            <url>https://dl.bintray.com/jfrog/jfrog-jars</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
     <profiles>
+
         <profile>
             <id>default</id>
             <activation>
@@ -87,6 +114,7 @@
                 </dependency>
             </dependencies>
         </profile>
+
         <profile>
             <id>test-debug-logging</id>
             <dependencies>
@@ -98,6 +126,7 @@
                 </dependency>
             </dependencies>
         </profile>
+
         <profile>
             <id>itest</id>
             <build>
@@ -251,12 +280,47 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.google.protobuf:protobuf-java</include>
+                                    <include>com.basho.riak.protobuf:riak-pb</include>
+                                </includes>
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.protobuf</pattern>
+                                    <shadedPattern>shaded.com.google.protobuf</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.basho.riak.protobuf</pattern>
+                                    <shadedPattern>shaded.com.basho.riak.protobuf</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.2</version>
                 <configuration>
                     <mavenExecutorId>forked-path</mavenExecutorId>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -277,6 +341,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -290,6 +355,7 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
+
             <plugin>
                 <!-- ensure that only methods available in java 1.6 can
                 be used even when compiling with java 1.7+ -->
@@ -312,6 +378,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -325,6 +392,7 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -333,6 +401,7 @@
                     <excludePackageNames>com.basho.riak.protobuf.util</excludePackageNames>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.jfrog.buildinfo</groupId>
                 <artifactId>artifactory-maven-plugin</artifactId>
@@ -365,6 +434,7 @@
 
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -433,17 +503,5 @@
             <version>1.5.6</version>
         </dependency>
     </dependencies>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>jfrog-artifactory-bintray</id>
-            <url>https://dl.bintray.com/jfrog/jfrog-jars</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
 </project>
